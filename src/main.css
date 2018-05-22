@@ -1,0 +1,23 @@
+.fakeimg {
+    height: 200px;
+    background: #aaa;
+}
+
+h2 {
+    text-align: center;
+    padding: 5px 5px;
+}
+
+table
+{
+    width: 70%;
+    font: 17px Calibri;
+}
+
+table, th, td
+{
+    border: solid 1px #DDD;
+    border-collapse: collapse;
+    padding: 2px 3px;
+    text-align: center;
+}
