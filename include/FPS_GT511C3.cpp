@@ -778,7 +778,7 @@ Response_Packet* FPS_GT511C3::GetResponse()
 	/*Serial1.listen();*/
 	//while (done == false)
 	//{
-	while (!Serial1.available() || timeout < 100)
+	while (!Serial1.available() || timeout < 1000)
 	{
 		timeout++;
 		delay(1);
