@@ -1,3 +1,9 @@
+// This #include statement was automatically added by the Particle IDE.
+#include <neopixel.h>
+
+// #include "application.h"
+// #include "neopixel/neopixel.h"
+
 
 bool d1 = HIGH;
 bool d2 = LOW;
@@ -13,7 +19,27 @@ int alert = 0;
 int locked = 1;
 String user;
 
+int waitTime = 25;
+void spin(int R, int G, int B);
 
+
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
+#define PIXEL_COUNT 16
+#define PIXEL_PIN D6
+#define PIXEL_TYPE WS2812
+
+#define GREEN 10,180,10
+#define RED 255,0,0
+#define AMBER 255,191,0
+#define CYAN 10,150,70
+#define PURPLE 180,3,180
+#define BLUE 5,5,190
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+
+// Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+
+void spin(int R, int G, int B);
 
 
 
@@ -42,10 +68,10 @@ void time_out()
 
 void unauthAccessTimer()
 {
-    // if there are three failed attempts then lock system and send SMS via IFTTT
+    // if there are three failed attempts then send SMS via IFTTT
     if (count == 3 || count > 3)
     {
-      lockout_period.start();
+      //lockout_period.start();
       // Notify for an SMS to be sent
       alert = 1;
       Serial.println("ALERT - to many unauthorised attempts");
@@ -82,6 +108,17 @@ void unLockDoor (){
   if (locked == 1 )
   {
     Serial.println("Authorised  - unlocking Door");
+
+    spin(AMBER);
+    spin(AMBER);
+    spin(AMBER);
+
+    // strip.begin();
+    // strip.setPixelColor(255,0,0);  //set RED- FOR unLOCKED
+    // strip.show();
+
+    show(RED);
+
     user = "Teahneal";
     Particle.publish("log", user);
     Serial.println(user);
@@ -91,6 +128,13 @@ void unLockDoor (){
   }
   else if (locked == 0 ){
     Serial.println("Door is unlocked");
+    // strip.begin();
+    // strip.setPixelColor(255,0,0);  //set RED- FOR unLOCKED
+    // strip.show();
+
+    show(RED);
+
+
   }
 
   locked = 0;
@@ -98,6 +142,23 @@ void unLockDoor (){
 }
 
 void unauthorisedUser(){
+
+  //log unauthorised User
+  user = "Unauthorised Access";
+  Particle.publish("log", user);
+
+  //SPIN RED FOR UNAUTHORISED USER
+  spin(RED);
+  spin(RED);
+  spin(RED);
+
+//   strip.begin();
+//   strip.setPixelColor(10,180,10);  //Initially set GREEN - FOR LOCKED
+//   strip.show();
+
+    show(GREEN);
+
+
 
   count++;
 
@@ -122,6 +183,15 @@ void setup()
    Serial.begin(9600);
 
    Particle.variable("alert", &alert, INT);
+
+  strip.begin();
+  strip.show();
+  show(GREEN);
+
+//   strip.begin();
+//   strip.setPixelColor(10,180,10);  //Initially set GREEN - FOR LOCKED
+//   strip.show();
+
 }
 
 
@@ -130,29 +200,52 @@ void serialEvent()
 {
     char c = Serial.read();
 
-    if (c == 'a' && count < 3){
+    if (c == 'a' ){  //&& count < 3
       unLockDoor();
     }
-    else if (c == 'u' && count < 3 ){
+    else if (c == 'u'  ){    //&& count < 3
       Serial.println("Unauthorised");
       unauthorisedUser();
     }
-    else {
-      RGB.control(true);
-      // Set the RGB LED to red
-      RGB.color(255, 0, 0);
-      Serial.println("System Locked Unauthorised Access");
-      user = "Unauthorised Access";
-      Particle.publish("log", user);
+    // else {
+    //   RGB.control(true);
+    //   // Set the RGB LED to red
+    //   RGB.color(255, 0, 0);
+    //   Serial.println("System Locked Unauthorised Access");
+    //
+    // }
+}
 
+void spin(int R, int G, int B) {
+    for(int i=0; i < PIXEL_COUNT; i++) {
+        strip.setPixelColor(i, R,G,B);
+        strip.show();
+        delay(waitTime);
+    }
+    for(int i=0; i < PIXEL_COUNT; i++) {
+        strip.setPixelColor(i, 0,0,0);
+        strip.show();
+        delay(waitTime);
+    }
+}
+
+
+void show(int R, int G, int B) {
+    for(int i=0; i < PIXEL_COUNT; i++) {
+        strip.setPixelColor(i, R,G,B);
+        strip.show();
     }
 }
 
 void loop()
 {
+
+  //show(GREEN);
   int buttonState = digitalRead( buttonPin );
-  if( buttonState == LOW )
+  if( buttonState == LOW ) //door shut
   {
+
+    //show(PURPLE);
 
     if(locked == 0 && count < 3)
     {
@@ -161,13 +254,28 @@ void loop()
       digitalWrite(2,!d2);
       analogWrite(3, 255);
       digitalWrite( led2, HIGH);
+
+    //   strip.begin();
+    //   strip.setPixelColor(10,180,10);  //Initially set GREEN - FOR LOCKED
+    //   strip.show();
+
+    show(GREEN);
+
+
     }
 
     locked = 1;
     timer.start();
 
 
-  }else
+  }else //door open
   {
+    //show(CYAN);
+  }
+
+  if (locked == 1 ){
+    //Serial.println("Door is unlocked");
+
+
   }
 }
