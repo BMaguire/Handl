@@ -1,5 +1,20 @@
 #include "Fingerprint_FPS_GT511C3.h"
 #include "HttpClient.h"
+#include "WebDuino.h"
+
+/* WEB SERVER */
+template<class T>
+inline Print &operator <<(Print &obj, T arg)
+{ obj.print(arg); return obj; }
+
+#define PREFIX ""
+WebServer webserver(PREFIX, 80);
+
+
+/* WEB SERVER END*/
+
+
+
 /*int counter = 0;*/
 int Serial1BaudRate = 9600;
 /*int incomingByte = 0; // for incoming serial data*/
@@ -19,6 +34,35 @@ http_response_t response;
 FPS_GT511C3 fps;
 char* url = "192.168.43.47";
 int port = 3000;
+
+
+void formCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
+{
+  Serial.println("Test");
+  if (type == WebServer::POST)
+  {
+    Serial.println("Test2");
+    bool repeat;
+    char name[16], value[16];
+    do
+    {
+      Serial.println("Test3");
+      repeat = server.readPOSTparam(name, 16, value, 16);
+      Serial.println("Test3");
+      if (name[0] == 'i')
+      {
+        int pin = strtoul(name + 1, NULL, 10);
+        int val = strtoul(value, NULL, 10);
+        fps.DeleteID(val-'0');
+        Serial.println("Deleted" + String((val-'0')));
+      }
+    } while (repeat);
+
+    server.httpSeeOther(PREFIX "/form");
+  }
+  Serial.println("Test4");
+}
+
 
 bool waitForRelease() {
   while(fps.IsPressFinger()) delay(100);
@@ -124,11 +168,15 @@ void postData(String body) {
 
 void setup() {
   pinMode(button, INPUT_PULLDOWN);
+  webserver.begin();
+  webserver.addCommand("form", &formCmd);
+
   initAuth();
-  /*Enroll();*/
 }
 
 void loop() {
+    webserver.processConnection();
+    Serial.println(WiFi.localIP());
 
     if (digitalRead(button) == LOW) {
       Serial.print("Button Pressed: Begin Enrollment");
