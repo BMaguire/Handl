@@ -36,31 +36,29 @@ char* url = "192.168.43.47";
 int port = 3000;
 
 
-void formCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
+void deleteCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
 {
-  Serial.println("Test");
   if (type == WebServer::POST)
   {
-    Serial.println("Test2");
     bool repeat;
     char name[16], value[16];
     do
     {
-      Serial.println("Test3");
       repeat = server.readPOSTparam(name, 16, value, 16);
-      Serial.println("Test3");
       if (name[0] == 'i')
       {
-        int pin = strtoul(name + 1, NULL, 10);
         int val = strtoul(value, NULL, 10);
-        fps.DeleteID(val-'0');
-        Serial.println("Deleted" + String((val-'0')));
+        if (fps.DeleteID(val)) {
+          Serial.println("Deleted profile: " + String(val));
+        } else {
+          Serial.println("Error occured while deleting: " + String(val));
+        }
       }
     } while (repeat);
 
-    server.httpSeeOther(PREFIX "/form");
+    /*server.httpSeeOther(PREFIX "/form");*/
+    server.httpSuccess();
   }
-  Serial.println("Test4");
 }
 
 
@@ -169,17 +167,17 @@ void postData(String body) {
 void setup() {
   pinMode(button, INPUT_PULLDOWN);
   webserver.begin();
-  webserver.addCommand("form", &formCmd);
+  webserver.addCommand("delete", &deleteCmd);
 
   initAuth();
 }
 
 void loop() {
     webserver.processConnection();
-    Serial.println(WiFi.localIP());
+    /*Serial.println(WiFi.localIP());*/
 
     if (digitalRead(button) == LOW) {
-      Serial.print("Button Pressed: Begin Enrollment");
+      Serial.println("Button Pressed: Begin Enrollment");
       Enroll();
     }
     /*Serial.printlnf("testing %d", 1);*/
@@ -190,9 +188,6 @@ void loop() {
       https://learn.sparkfun.com/tutorials/fingerprint-scanner-hookup-guide?_ga=2.202085589.539386202.1524630265-817810494.1521357116
       fingerprint initializes at 9600 baud rate
     */
-    /*fps.SetLED(true); // turn on the LED inside the fps*/
-  	/*delay(1000);*/
-  	/*fps.SetLED(false);// turn off the LED inside the fps*/
 
     if (fps.IsPressFinger())
     {
@@ -217,7 +212,7 @@ void loop() {
     }
     else
     {
-      Serial.println("Please press finger");
+      /*Serial.println("Please press finger");*/
     }
     delay(100);
 
