@@ -168,29 +168,37 @@ void unauthorisedUser(){
   }
 }
 
+void motorSetup(){
 
-void setup()
-{
   pinMode(1, OUTPUT);  /* Motor control pin 1 */
   pinMode(2, OUTPUT);  /* Motor control pin 2 */
   pinMode(3, OUTPUT);  /* PWM pin for Speed Control */
+
+}
+
+
+void lightSetup(){
 
   pinMode(led2, OUTPUT);
   digitalWrite(led1, LOW);
   digitalWrite(led2, LOW);
   pinMode( buttonPin , INPUT_PULLUP); // sets pin as input
 
-   Serial.begin(9600);
-
-   Particle.variable("alert", &alert, INT);
-
   strip.begin();
   strip.show();
   show(GREEN);
 
-//   strip.begin();
-//   strip.setPixelColor(10,180,10);  //Initially set GREEN - FOR LOCKED
-//   strip.show();
+}
+
+
+void setup()
+{
+  motorSetup();
+
+  lightSetup();
+
+   Serial.begin(9600);
+   Particle.variable("alert", &alert, INT);
 
 }
 
@@ -207,13 +215,6 @@ void serialEvent()
       Serial.println("Unauthorised");
       unauthorisedUser();
     }
-    // else {
-    //   RGB.control(true);
-    //   // Set the RGB LED to red
-    //   RGB.color(255, 0, 0);
-    //   Serial.println("System Locked Unauthorised Access");
-    //
-    // }
 }
 
 void spin(int R, int G, int B) {
